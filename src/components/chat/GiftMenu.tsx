@@ -22,7 +22,16 @@ export default function GiftMenu({ onGiftSelect, onClose }: GiftMenuProps) {
   ];
 
   return (
-    <div className="absolute bottom-20 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-72">
+    <div className="absolute bottom-full mb-2 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-72 z-50">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-medium">Cadeaux</h3>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          ✕
+        </button>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         {gifts.map((gift) => (
           <button
@@ -35,13 +44,13 @@ export default function GiftMenu({ onGiftSelect, onClose }: GiftMenuProps) {
           >
             <FontAwesomeIcon 
               icon={gift.icon} 
-              className="text-2xl text-primary mb-2" 
+              className="text-2xl text-yellow-500 mb-2" 
             />
             <span className="text-sm font-medium dark:text-white">
               {gift.name}
             </span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {gift.price} crédits
+            <span className="text-xs font-medium text-yellow-500 dark:text-yellow-400">
+              {gift.price} 💎
             </span>
           </button>
         ))}

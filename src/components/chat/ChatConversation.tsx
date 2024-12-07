@@ -8,7 +8,7 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import PremiumBanner from './PremiumBanner';
 import EmojiPicker from './EmojiPicker';
-import GiftMenu from './GiftMenu';
+import GiftMenu, { Gift } from './GiftMenu';
 import { getCoachResponse } from '../../utils/coachResponses';
 import { randomResponses } from '../../data/randomResponses';
 
@@ -95,16 +95,32 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
 
   const handleEmojiSelect = (emoji: string) => {
     setNewMessage(prev => prev + emoji);
+    setShowEmojiPicker(false);  // Fermer le picker après sélection
   };
 
-  const handleGiftSelect = (gift: { id: string; name: string }) => {
+  const handleGiftSelect = (gift: Gift) => {
+    // Vérifier si l'utilisateur a assez de crédits (à implémenter)
+    const userCredits = 0; // TODO: Récupérer les crédits de l'utilisateur
+    if (userCredits < gift.price) {
+      alert(`Vous n'avez pas assez de crédits. Ce cadeau coûte ${gift.price} crédits.`);
+      return;
+    }
+    
+    // Envoyer le message de cadeau avec l'icône et le prix
+    const giftMessage = `🎁 A envoyé un cadeau : ${gift.name} (${gift.price} crédits)`;
+    handleSendMessage(giftMessage);
+    setShowGiftMenu(false);
+    
+    // TODO: Déduire les crédits du compte de l'utilisateur
+  };
+
+  const handleAttachmentClick = () => {
     if (!user?.isPremium) {
       setShowPremiumBanner(true);
       return;
     }
-    // Logique d'envoi de cadeau
-    handleSendMessage(`🎁 A envoyé un ${gift.name}`);
-    setShowGiftMenu(false);
+    // TODO: Implémenter la logique de pièce jointe
+    alert("La fonctionnalité de pièce jointe sera bientôt disponible !");
   };
 
   return (
@@ -162,13 +178,14 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
         )}
       </AnimatePresence>
 
-      <div className="border-t border-gray-200 dark:border-gray-700">
+      <div className="border-t border-gray-200 dark:border-gray-700 relative">
         <ChatInput
           value={newMessage}
           onChange={setNewMessage}
           onSend={handleSendMessage}
           onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
           onGiftClick={() => setShowGiftMenu(!showGiftMenu)}
+          onAttachmentClick={handleAttachmentClick}
           showEmojiPicker={showEmojiPicker}
           showGiftMenu={showGiftMenu}
           disabled={shouldShowPremium}
@@ -177,7 +194,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
         <AnimatePresence>
           {showEmojiPicker && !shouldShowPremium && (
             <EmojiPicker
-              onSelect={handleEmojiSelect}
+              onEmojiSelect={handleEmojiSelect}
               onClose={() => setShowEmojiPicker(false)}
             />
           )}
