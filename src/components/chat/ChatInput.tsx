@@ -22,7 +22,7 @@ const ChatInput = ({
   disabled,
   hasAttachment
 }: ChatInputProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -46,9 +46,11 @@ const ChatInput = ({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     console.log('Input value changing to:', e.target.value);
-    onChange(e.target.value);
+    if (e.target.value.length <= 1000) {
+      onChange(e.target.value);
+    }
   };
 
   const handleAttachmentClick = (e: React.MouseEvent) => {
@@ -64,58 +66,52 @@ const ChatInput = ({
   const hasContent = value.trim().length > 0 || hasAttachment;
 
   return (
-    <div className="p-2">
-      <div className="flex items-center gap-2">
-        <div 
-          role="button"
-          tabIndex={0}
+    <div className="relative p-2">
+      <div className="flex items-end gap-2">
+        <button
           onClick={handleAttachmentClick}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              handleAttachmentClick(e as any);
-            }
-          }}
-          className={`shrink-0 p-2 rounded-full transition-colors cursor-pointer ${
-            hasAttachment
-              ? 'bg-blue-100 dark:bg-blue-900 text-blue-500'
-              : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-          }`}
-        >
-          <FontAwesomeIcon icon={faPaperclip} />
-        </div>
-
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={handleChange}
-          onKeyPress={handleKeyPress}
-          placeholder="Écrivez votre message..."
-          className={`flex-1 min-w-0 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'
+          className={`p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 ${
+            disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           disabled={disabled}
-          autoComplete="off"
-          style={{
-            WebkitAppearance: 'none'
-          }}
-        />
+        >
+          <FontAwesomeIcon icon={faPaperclip} className={hasAttachment ? 'text-primary' : ''} />
+        </button>
 
-        {hasContent && (
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={handleSend}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                handleSend(e as any);
-              }
-            }}
-            className="shrink-0 p-2 rounded-full transition-colors bg-blue-500 text-white hover:bg-blue-600 cursor-pointer"
-          >
-            <FontAwesomeIcon icon={faPaperPlane} />
+        <div className="flex-1 relative">
+          <textarea
+            ref={inputRef}
+            value={value}
+            onChange={handleChange}
+            onKeyDown={handleKeyPress}
+            placeholder="Écrivez votre message..."
+            className={`w-full p-2 pr-12 max-h-32 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-primary ${
+              disabled ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={disabled}
+            rows={1}
+          />
+          <div className="absolute right-2 bottom-2 flex items-center gap-2">
+            {value.length > 0 && (
+              <div className={`text-xs ${
+                value.length > 900 ? 'text-red-500' : 'text-gray-500'
+              }`}>
+                {value.length}/1000
+              </div>
+            )}
+            {value.trim() && (
+              <button
+                onClick={handleSend}
+                disabled={(!value.trim() && !hasAttachment) || disabled}
+                className={`text-primary hover:text-primary-dark transition-colors ${
+                  (!value.trim() && !hasAttachment) || disabled ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                <FontAwesomeIcon icon={faPaperPlane} />
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

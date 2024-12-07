@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useState } from 'react';
 import ImageViewer from './ImageViewer';
 
@@ -21,24 +20,22 @@ interface ChatMessageProps {
   isPremium?: boolean;
 }
 
-const ChatMessage = ({ message, isUser, avatar, isPremium }: ChatMessageProps) => {
+export function ChatMessage({ message, isUser, avatar, isPremium }: ChatMessageProps) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   if (!message?.content && !message?.image) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-start gap-2`}
+    <div
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-start gap-2 px-4`}
     >
       {!isUser && (
-        <img src={avatar || '/default-avatar.png'} alt="Avatar" className="w-8 h-8 rounded-full" />
+        <img src={avatar || '/default-avatar.png'} alt="Avatar" className="w-8 h-8 rounded-full flex-shrink-0" />
       )}
       
-      <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%] min-w-0`}>
         <div
-          className={`relative max-w-[70%] rounded-lg p-3 ${
+          className={`relative rounded-lg p-3 overflow-hidden ${
             isUser
               ? 'bg-blue-500 text-white'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
@@ -56,7 +53,7 @@ const ChatMessage = ({ message, isUser, avatar, isPremium }: ChatMessageProps) =
             </div>
           )}
           {message.content && (
-            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            <p className="text-sm whitespace-pre-wrap break-all overflow-wrap-anywhere">{message.content}</p>
           )}
 
           <span 
@@ -75,7 +72,7 @@ const ChatMessage = ({ message, isUser, avatar, isPremium }: ChatMessageProps) =
       </div>
 
       {isUser && (
-        <img src={avatar || '/default-avatar.png'} alt="Avatar" className={`w-8 h-8 rounded-full ${!isPremium && 'opacity-50'}`} />
+        <img src={avatar || '/default-avatar.png'} alt="Avatar" className={`w-8 h-8 rounded-full flex-shrink-0 ${!isPremium && 'opacity-50'}`} />
       )}
       
       {selectedImage && (
@@ -84,7 +81,7 @@ const ChatMessage = ({ message, isUser, avatar, isPremium }: ChatMessageProps) =
           onClose={() => setSelectedImage(null)}
         />
       )}
-    </motion.div>
+    </div>
   );
 };
 

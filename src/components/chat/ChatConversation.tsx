@@ -9,6 +9,33 @@ import ChatInput from './ChatInput';
 import PremiumBanner from './PremiumBanner';
 import GiftMenu, { Gift } from './GiftMenu';
 
+const getRandomResponse = (coach: Coach) => {
+  const responses = [
+    "Je comprends ce que vous ressentez.",
+    "C'est une situation intéressante.",
+    "Pouvez-vous m'en dire plus ?",
+    "Je suis là pour vous écouter.",
+    "Comment vous sentez-vous par rapport à cela ?",
+    "Prenons le temps d'explorer cela ensemble.",
+  ];
+  
+  if (coach.type === 'Psychologue') {
+    responses.push(
+      "Comment cela affecte-t-il votre quotidien ?",
+      "Quels sentiments cela évoque-t-il en vous ?",
+      "Avez-vous déjà vécu une situation similaire ?",
+    );
+  } else if (coach.type === 'Coach de vie') {
+    responses.push(
+      "Quels sont vos objectifs dans cette situation ?",
+      "Que souhaitez-vous accomplir ?",
+      "Comment puis-je vous aider à avancer ?",
+    );
+  }
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+};
+
 interface ChatConversationProps {
   coach: Coach;
   onBack?: () => void;
@@ -69,15 +96,23 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
   }, [userMessageCount, isPremium, coach.id, isLimited, setLimited]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length]);
 
   const handleSendMessage = async () => {
     if ((!newMessage.trim() && !selectedFile) || shouldShowPremium) return;
+
+    // Vérifier la longueur du message
+    if (newMessage.length > 1000) {
+      alert('Le message ne peut pas dépasser 1000 caractères');
+      return;
+    }
 
     let messageContent = newMessage;
     let imageData = null;
@@ -110,7 +145,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
     const coachMessage = {
       id: (Date.now() + 1).toString(),
       chatId: coach.id,
-      content: getRandomResponse(),
+      content: getRandomResponse(coach),
       timestamp: new Date().toISOString(),
       senderId: coach.id,
       receiverId: 'user'
@@ -120,13 +155,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
     setIsCoachTyping(false);
   };
 
-  const handleAttachmentClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -175,31 +204,41 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
         <ChatHeader coach={coach} onBack={onBack} />
       </div>
       
-      <div className="overflow-y-auto" style={{ height: messageAreaHeight }}>
-        <div className="p-4 space-y-4">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              isUser={message.senderId === 'user'}
-              avatar={message.senderId === 'user' ? (user?.avatar || '/default-avatar.png') : (coach.avatar || '/default-avatar.png')}
-              isPremium={message.senderId === 'user' ? isPremium : true}
-            />
-          ))}
+      <div 
+        className="flex-1 overflow-y-auto relative"
+        style={{ height: messageAreaHeight }}
+      >
+        <div className="py-4 h-full">
+          {messages.length === 0 ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+              <span className="text-4xl mb-2">👋</span>
+              <p className="text-gray-500 dark:text-gray-400 text-center px-4">
+                Commencez une nouvelle conversation
+              </p>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <ChatMessage
+                key={message.id}
+                message={message}
+                isUser={message.senderId === 'user'}
+                avatar={message.senderId === 'user' ? (user?.avatar || '/default-avatar.png') : (coach.avatar || '/default-avatar.png')}
+                isPremium={message.senderId === 'user' ? isPremium : true}
+              />
+            ))
+          )}
           {isCoachTyping && (
-            <div className="flex items-center gap-2 text-gray-500">
-              <img
-                src={coach.avatar}
-                alt={coach.name}
+            <div className="flex items-center gap-2 px-4 text-gray-500">
+              <img 
+                src={coach.avatar || '/default-avatar.png'} 
+                alt="Avatar" 
                 className="w-8 h-8 rounded-full"
               />
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="bg-gray-200 dark:bg-gray-700 rounded-lg p-2"
-              >
-                typing...
-              </motion.div>
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -210,7 +249,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleFileChange}
+        onChange={handleFileSelect}
         accept="image/*"
         className="hidden"
         onClick={e => e.stopPropagation()}
@@ -249,7 +288,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
           value={newMessage}
           onChange={setNewMessage}
           onSend={handleSendMessage}
-          onAttachmentClick={handleAttachmentClick}
+          onAttachmentClick={() => fileInputRef.current?.click()}
           disabled={shouldShowPremium}
           hasAttachment={!!selectedFile}
         />
