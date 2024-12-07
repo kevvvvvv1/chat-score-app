@@ -1,0 +1,22 @@
+export const randomResponses = [
+  "Ah oui, je vois ce que tu veux dire !",
+  "C'est une excellente observation.",
+  "Très intéressant, dis m'en plus.",
+  "Je comprends ton point de vue.",
+  "Effectivement, c'est une bonne approche.",
+  "C'est une perspective intéressante.",
+  "Je n'y avais pas pensé comme ça.",
+  "Tu soulèves un point important.",
+  "Absolument, je suis d'accord avec toi.",
+  "C'est une question pertinente.",
+  "Laisse-moi réfléchir à ça...",
+  "Je pense qu'on est sur la bonne voie.",
+  "C'est exactement ce que je voulais dire !",
+  "Tu as tout à fait raison.",
+  "On pourrait aussi voir ça sous un autre angle.",
+  "C'est fascinant comme sujet.",
+  "Je partage ton avis là-dessus.",
+  "Ça me fait penser à quelque chose...",
+  "C'est une excellente analyse.",
+  "Tu marques un point important."
+];

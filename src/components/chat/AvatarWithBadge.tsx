@@ -2,16 +2,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiamond } from '@fortawesome/free-solid-svg-icons';
 
 interface AvatarWithBadgeProps {
-  src: string;
-  alt: string;
-  isPremium: boolean;
+  src?: string;
+  alt?: string;
+  isPremium?: boolean;
 }
 
-export function AvatarWithBadge({ src, alt, isPremium }: AvatarWithBadgeProps) {
+const AvatarWithBadge = ({ src, alt = '', isPremium = false }: AvatarWithBadgeProps) => {
   return (
     <div className="relative">
       <img
-        src={src}
+        src={src || '/default-avatar.png'}
         alt={alt}
         className="w-10 h-10 rounded-full object-cover"
       />
@@ -25,4 +25,6 @@ export function AvatarWithBadge({ src, alt, isPremium }: AvatarWithBadgeProps) {
       </span>
     </div>
   );
-}
+};
+
+export default AvatarWithBadge;

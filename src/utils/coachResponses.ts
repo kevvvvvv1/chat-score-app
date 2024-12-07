@@ -33,24 +33,17 @@ const getRandomResponse = (category: keyof typeof responseTemplates): string => 
   return responses[Math.floor(Math.random() * responses.length)];
 };
 
-export const getCoachResponse = async (coach: Coach, userMessage: string): Promise<string> => {
-  // Simuler un délai de réponse naturel (1.5-3.5 secondes)
-  const delay = Math.random() * 2000 + 1500;
+export const getCoachResponse = (coach: Coach, userMessage: string): string => {
+  const message = userMessage.toLowerCase();
   
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const message = userMessage.toLowerCase();
-      
-      // Logique simple de réponse basée sur le contenu du message
-      if (message.includes('bonjour') || message.includes('salut')) {
-        resolve(getRandomResponse('greeting'));
-      } else if (message.includes('?')) {
-        resolve(getRandomResponse('acknowledgment') + ' ' + getRandomResponse('question'));
-      } else if (message.includes('merci') || message.includes('au revoir')) {
-        resolve(getRandomResponse('closing'));
-      } else {
-        resolve(getRandomResponse('support') + ' ' + getRandomResponse('question'));
-      }
-    }, delay);
-  });
+  // Logique simple de réponse basée sur le contenu du message
+  if (message.includes('bonjour') || message.includes('salut')) {
+    return getRandomResponse('greeting');
+  } else if (message.includes('?')) {
+    return getRandomResponse('acknowledgment') + ' ' + getRandomResponse('question');
+  } else if (message.includes('merci') || message.includes('au revoir')) {
+    return getRandomResponse('closing');
+  } else {
+    return getRandomResponse('support') + ' ' + getRandomResponse('question');
+  }
 };

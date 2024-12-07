@@ -1,19 +1,23 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { AvatarWithBadge } from './AvatarWithBadge';
+import AvatarWithBadge from './AvatarWithBadge';
 import { Coach } from '../../types/coach';
 
 interface ChatHeaderProps {
-  coach: Coach;
-  onBack: () => void;
+  coach?: Coach;
+  onBack?: () => void;
 }
 
-export function ChatHeader({ coach, onBack }: ChatHeaderProps) {
+const ChatHeader = ({ coach, onBack }: ChatHeaderProps) => {
+  if (!coach) return null;
+  
   return (
     <div className="bg-white dark:bg-gray-800 p-4 flex items-center gap-4 shadow-sm">
-      <button onClick={onBack} className="text-gray-600 dark:text-gray-300">
-        <FontAwesomeIcon icon={faArrowLeft} />
-      </button>
+      {onBack && (
+        <button onClick={onBack} className="text-gray-600 dark:text-gray-300">
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+      )}
       <AvatarWithBadge src={coach.avatar} alt={coach.name} isPremium={true} />
       <div>
         <h2 className="font-semibold dark:text-white">{coach.name}</h2>
@@ -23,4 +27,6 @@ export function ChatHeader({ coach, onBack }: ChatHeaderProps) {
       </div>
     </div>
   );
-}
+};
+
+export default ChatHeader;

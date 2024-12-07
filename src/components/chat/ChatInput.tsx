@@ -7,55 +7,85 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 interface ChatInputProps {
-  newMessage: string;
-  onMessageChange: (message: string) => void;
-  onSendMessage: () => void;
+  value: string;
+  onChange: (value: string) => void;
+  onSend: (message: string) => void;
   onEmojiClick: () => void;
   onGiftClick: () => void;
-  onKeyPress: (e: React.KeyboardEvent) => void;
+  showEmojiPicker: boolean;
+  showGiftMenu: boolean;
 }
 
-export function ChatInput({
-  newMessage,
-  onMessageChange,
-  onSendMessage,
+const ChatInput = ({
+  value,
+  onChange,
+  onSend,
   onEmojiClick,
   onGiftClick,
-  onKeyPress
-}: ChatInputProps) {
+  showEmojiPicker,
+  showGiftMenu
+}: ChatInputProps) => {
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSend(value);
+    }
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+    <div className="bg-white dark:bg-gray-800 p-4">
       <div className="flex items-center gap-2">
         <button 
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2"
           onClick={onEmojiClick}
+          className={`p-2 rounded-full transition-colors ${
+            showEmojiPicker 
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-500' 
+              : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
         >
           <FontAwesomeIcon icon={faFaceSmile} />
         </button>
-        <button className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2">
+
+        <button 
+          className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+        >
           <FontAwesomeIcon icon={faPaperclip} />
         </button>
+
         <input
           type="text"
-          value={newMessage}
-          onChange={(e) => onMessageChange(e.target.value)}
-          onKeyPress={onKeyPress}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Écrivez votre message..."
-          className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+
         <button 
-          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2"
           onClick={onGiftClick}
+          className={`p-2 rounded-full transition-colors ${
+            showGiftMenu 
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-500' 
+              : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
         >
           <FontAwesomeIcon icon={faGift} />
         </button>
+
         <button
-          onClick={onSendMessage}
-          className="text-primary hover:text-primary/80 p-2"
+          onClick={() => onSend(value)}
+          disabled={!value.trim()}
+          className={`p-2 rounded-full transition-colors ${
+            value.trim()
+              ? 'bg-blue-500 text-white hover:bg-blue-600'
+              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+          }`}
         >
           <FontAwesomeIcon icon={faPaperPlane} />
         </button>
       </div>
     </div>
   );
-}
+};
+
+export default ChatInput;

@@ -2,30 +2,23 @@ import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Coach } from '../../types/coach';
 import { useAuthStore } from '../../stores/authStore';
-import { ChatHeader } from './ChatHeader';
-import { ChatMessage } from './ChatMessage';
-import { ChatInput } from './ChatInput';
-import { PremiumBanner } from './PremiumBanner';
+import { useChatStore } from '../../stores/chatStore';
+import ChatHeader from './ChatHeader';
+import ChatMessage from './ChatMessage';
+import ChatInput from './ChatInput';
+import PremiumBanner from './PremiumBanner';
 import EmojiPicker from './EmojiPicker';
 import GiftMenu from './GiftMenu';
 import { getCoachResponse } from '../../utils/coachResponses';
-
-interface Message {
-  id: string;
-  text: string;
-  senderId: string;
-  timestamp: Date;
-  senderAvatar: string;
-  isPremium: boolean;
-}
+import { randomResponses } from '../../data/randomResponses';
 
 interface ChatConversationProps {
   coach: Coach;
-  onBack: () => void;
+  onBack?: () => void;
+  onSendMessage?: () => void;
 }
 
-export function ChatConversation({ coach, onBack }: ChatConversationProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function ChatConversation({ coach, onBack, onSendMessage }: ChatConversationProps) {
   const [newMessage, setNewMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGiftMenu, setShowGiftMenu] = useState(false);
@@ -33,6 +26,24 @@ export function ChatConversation({ coach, onBack }: ChatConversationProps) {
   const [isCoachTyping, setIsCoachTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
+  const { messages: allMessages, addMessage, isLimited, setLimited } = useChatStore();
+
+  // Filtrer les messages pour ce coach
+  const messages = allMessages.filter(msg => msg.chatId === coach.id);
+  
+  // Compter les messages de l'utilisateur dans cette conversation
+  const userMessageCount = messages.filter(msg => msg.senderId === 'user').length;
+
+  // Vérifier si la conversation est limitée ou si l'utilisateur a atteint la limite
+  const shouldShowPremium = !user?.isPremium && (isLimited(coach.id) || userMessageCount >= 4);
+
+  useEffect(() => {
+    // Si l'utilisateur atteint la limite et n'est pas premium, marquer la conversation comme limitée
+    if (!user?.isPremium && userMessageCount >= 4 && !isLimited(coach.id)) {
+      setLimited(coach.id);
+      setShowPremiumBanner(true);
+    }
+  }, [userMessageCount, user?.isPremium, coach.id, isLimited, setLimited]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -42,127 +53,139 @@ export function ChatConversation({ coach, onBack }: ChatConversationProps) {
     scrollToBottom();
   }, [messages]);
 
-  const addCoachResponse = async (userMessage: string) => {
+  const handleSendMessage = (content: string) => {
+    if (!content.trim() || shouldShowPremium) return;
+
+    // Ajouter le message de l'utilisateur
+    const userMessage = {
+      id: `${Date.now()}-user`,
+      chatId: coach.id,
+      content: content.trim(),
+      timestamp: new Date().toISOString(),
+      senderId: 'user',
+      receiverId: coach.id
+    };
+    
+    addMessage(userMessage);
+    setNewMessage('');
+    setShowEmojiPicker(false);
+    scrollToBottom();
+
+    // Simuler la réponse du coach
     setIsCoachTyping(true);
     
-    try {
-      const response = await getCoachResponse(coach, userMessage);
-      
-      const coachMessage: Message = {
-        id: Date.now().toString(),
-        text: response,
-        senderId: coach.id,
-        timestamp: new Date(),
-        senderAvatar: coach.avatar,
-        isPremium: true
-      };
-
-      setMessages(prev => [...prev, coachMessage]);
-    } finally {
-      setIsCoachTyping(false);
-    }
-  };
-
-  const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    // Délai aléatoire entre 1 et 3 secondes
+    const delay = 1000 + Math.random() * 2000;
     
-    const userMessages = messages.filter(m => m.senderId === user?.id);
-    if (userMessages.length >= 5) {
-      setShowPremiumBanner(true);
-      return;
-    }
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: newMessage,
-      senderId: user?.id || '',
-      timestamp: new Date(),
-      senderAvatar: user?.avatar || '',
-      isPremium: false
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
-
-    await addCoachResponse(newMessage);
+    setTimeout(() => {
+      const randomResponse = randomResponses[Math.floor(Math.random() * randomResponses.length)];
+      const coachMessage = {
+        id: `${Date.now()}-coach`,
+        chatId: coach.id,
+        content: randomResponse,
+        timestamp: new Date().toISOString(),
+        senderId: coach.id,
+        receiverId: 'user'
+      };
+      addMessage(coachMessage);
+      setIsCoachTyping(false);
+      scrollToBottom();
+    }, delay);
   };
 
   const handleEmojiSelect = (emoji: string) => {
     setNewMessage(prev => prev + emoji);
-    setShowEmojiPicker(false);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handleGiftSelect = (gift: { id: string; name: string }) => {
+    if (!user?.isPremium) {
+      setShowPremiumBanner(true);
+      return;
     }
+    // Logique d'envoi de cadeau
+    handleSendMessage(`🎁 A envoyé un ${gift.name}`);
+    setShowGiftMenu(false);
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       <ChatHeader coach={coach} onBack={onBack} />
 
-      <div className="flex-1 overflow-y-auto p-4">
-        {messages.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400"
-          >
-            <p className="mb-2">Aucun message pour le moment</p>
-            <p className="text-sm">Commencez la conversation avec {coach.name}</p>
-          </motion.div>
-        ) : (
-          messages.map((message) => (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => {
+          if (!message || !message.content || !message.timestamp || !message.senderId) return null;
+          
+          const timestamp = message.timestamp ? new Date(message.timestamp) : new Date();
+          if (!(timestamp instanceof Date) || isNaN(timestamp.getTime())) return null;
+          
+          return (
             <ChatMessage
               key={message.id}
-              message={message}
-              isCurrentUser={message.senderId === user?.id}
+              content={typeof message.content === 'string' ? message.content : ''}
+              timestamp={timestamp}
+              isUser={message.senderId === 'user'}
+              avatar={message.senderId === 'user' ? (user?.avatar || '/default-avatar.png') : (coach.avatar || '/default-avatar.png')}
+              isPremium={message.senderId === 'user' ? user?.isPremium : true}
             />
-          ))
-        )}
+          );
+        })}
         {isCoachTyping && (
-          <div className="flex gap-2 items-center text-sm text-gray-500 dark:text-gray-400 ml-14">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <div className="flex items-center gap-2 text-gray-500">
+            <img
+              src={coach.avatar}
+              alt={coach.name}
+              className="w-8 h-8 rounded-full"
+            />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-gray-200 dark:bg-gray-700 rounded-lg p-2"
+            >
+              typing...
+            </motion.div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       <AnimatePresence>
-        {showPremiumBanner && (
-          <PremiumBanner />
+        {shouldShowPremium && (
+          <PremiumBanner 
+            onClose={() => setShowPremiumBanner(false)}
+            onUpgrade={() => {
+              window.location.href = '/premium';
+            }}
+          />
         )}
       </AnimatePresence>
 
-      {!showPremiumBanner && (
-        <div className="mt-auto">
-          <ChatInput
-            newMessage={newMessage}
-            onMessageChange={setNewMessage}
-            onSendMessage={handleSendMessage}
-            onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            onGiftClick={() => setShowGiftMenu(!showGiftMenu)}
-            onKeyPress={handleKeyPress}
-          />
-
-          {showEmojiPicker && (
-            <div className="absolute bottom-20 left-4">
-              <EmojiPicker onEmojiSelect={handleEmojiSelect} />
-            </div>
-          )}
-
-          {showGiftMenu && (
-            <GiftMenu 
-              onGiftSelect={() => {}} 
-              onClose={() => setShowGiftMenu(false)} 
+      <div className="border-t border-gray-200 dark:border-gray-700">
+        <ChatInput
+          value={newMessage}
+          onChange={setNewMessage}
+          onSend={handleSendMessage}
+          onEmojiClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          onGiftClick={() => setShowGiftMenu(!showGiftMenu)}
+          showEmojiPicker={showEmojiPicker}
+          showGiftMenu={showGiftMenu}
+          disabled={shouldShowPremium}
+        />
+        
+        <AnimatePresence>
+          {showEmojiPicker && !shouldShowPremium && (
+            <EmojiPicker
+              onSelect={handleEmojiSelect}
+              onClose={() => setShowEmojiPicker(false)}
             />
           )}
-        </div>
-      )}
+          {showGiftMenu && !shouldShowPremium && (
+            <GiftMenu
+              onGiftSelect={handleGiftSelect}
+              onClose={() => setShowGiftMenu(false)}
+            />
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

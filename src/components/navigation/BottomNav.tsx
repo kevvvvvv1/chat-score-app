@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faComments, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { useAuthStore } from '../../stores/authStore';
-import { AvatarWithBadge } from '../chat/AvatarWithBadge';
+import AvatarWithBadge from '../chat/AvatarWithBadge';
 
 export default function BottomNav() {
   const location = useLocation();
