@@ -151,7 +151,10 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
       <AnimatePresence>
         {shouldShowPremium && (
           <PremiumBanner 
-            onClose={() => setShowPremiumBanner(false)}
+            onClose={() => {
+              setShowPremiumBanner(false);
+              onBack?.();  
+            }}
             onUpgrade={() => {
               window.location.href = '/premium';
             }}

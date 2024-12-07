@@ -55,7 +55,7 @@ const PremiumBanner = ({ onClose, onUpgrade }: PremiumBannerProps) => {
               onClick={onClose}
               className="w-full px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
             >
-              Continuer en version gratuite
+              Retour
             </button>
           </div>
         </div>
