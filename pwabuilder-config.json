@@ -1,0 +1,32 @@
+{
+  "name": "Chatfresh",
+  "packageId": "com.chatfresh.app",
+  "url": "https://admirable-phoenix-26b565.netlify.app",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#FF69B4",
+  "backgroundColor": "#ffffff",
+  "icons": {
+    "android": {
+      "src": "public/icons/android-icon-192x192.png",
+      "sizes": [
+        "192x192",
+        "512x512"
+      ]
+    }
+  },
+  "shortcuts": [],
+  "screenshots": [],
+  "features": {
+    "notifications": true,
+    "locationServices": false
+  },
+  "signingMode": "new",
+  "signing": {
+    "release": {
+      "alias": "chatfresh",
+      "keyPassword": "chatfresh",
+      "storePassword": "chatfresh"
+    }
+  }
+}

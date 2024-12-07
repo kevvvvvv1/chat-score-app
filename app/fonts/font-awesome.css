@@ -1,0 +1,6 @@
+.fa {
+  font-family: "FontAwesome";
+}
+.fa-user:before {
+  content: "\f007";
+}

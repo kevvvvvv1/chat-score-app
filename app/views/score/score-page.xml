@@ -1,0 +1,10 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="onNavigatingTo" class="page">
+    <ActionBar title="Mon Score">
+        <NavigationButton text="Back" android.systemIcon="ic_menu_back" />
+    </ActionBar>
+    
+    <StackLayout class="p-4">
+        <Label text="Score: 0" class="text-2xl text-center font-bold mb-4" />
+        <Label text="Commencez le test pour voir votre score" class="text-center text-gray-600" textWrap="true" />
+    </StackLayout>
+</Page>

@@ -1,0 +1,21 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
+      navigatingTo="onNavigatingTo" 
+      class="page">
+    <ActionBar title="Accueil">
+        <ActionItem ios.position="right" android.position="actionBar">
+            <Label text="{{ 'fa-user' | fonticon }}" class="fa text-2xl" tap="{{ onProfileTap }}" />
+        </ActionItem>
+    </ActionBar>
+
+    <StackLayout class="p-6 space-y-4">
+        <Label text="Bienvenue!" class="text-3xl font-bold text-center mb-8" />
+        
+        <Button text="Start Chatting" 
+                tap="{{ onStartChatting }}" 
+                class="btn p-4 bg-blue-500 text-white rounded-lg text-lg" />
+        
+        <Button text="Tester mon score" 
+                tap="{{ onTestScore }}" 
+                class="btn p-4 bg-green-500 text-white rounded-lg text-lg" />
+    </StackLayout>
+</Page>

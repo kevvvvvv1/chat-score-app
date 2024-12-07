@@ -1,0 +1,25 @@
+{
+  "packageId": "com.chatfresh.app",
+  "name": "Chatfresh",
+  "launcherName": "Chatfresh",
+  "display": "standalone",
+  "themeColor": "#FF69B4",
+  "backgroundColor": "#FFFFFF",
+  "iconUrl": "https://admirable-phoenix-26b565.netlify.app/icon-512x512.png",
+  "maskableIconUrl": "https://admirable-phoenix-26b565.netlify.app/icon-512x512.png",
+  "startUrl": "/",
+  "webManifestUrl": "https://admirable-phoenix-26b565.netlify.app/manifest.json",
+  "appVersion": "1.0.0",
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "generatorApp": {
+    "name": "bubblewrap-cli",
+    "version": "1.19.0"
+  },
+  "webview": {
+    "androidMinSdk": 23,
+    "androidMaxSdk": 33
+  }
+}
