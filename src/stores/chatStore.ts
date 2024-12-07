@@ -8,6 +8,10 @@ interface Message {
   timestamp: string;
   senderId: string;
   receiverId: string;
+  image?: {
+    data: string;  // base64 data
+    type: string;  // mime type
+  };
 }
 
 interface ChatState {

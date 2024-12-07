@@ -22,26 +22,25 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
   const [isCoachTyping, setIsCoachTyping] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+  const [messageAreaHeight, setMessageAreaHeight] = useState('100vh');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
   const { messages: allMessages, addMessage, isLimited, setLimited } = useChatStore();
 
-  // Gérer la hauteur du viewport pour le mobile
   useEffect(() => {
-    const handleResize = () => {
-      setViewportHeight(window.innerHeight);
+    const updateHeight = () => {
+      const headerHeight = headerRef.current?.offsetHeight || 0;
+      const inputHeight = inputRef.current?.offsetHeight || 0;
+      const newHeight = `calc(100vh - ${headerHeight}px - ${inputHeight}px)`;
+      setMessageAreaHeight(newHeight);
     };
 
-    // Gérer les changements de hauteur du viewport (clavier mobile)
-    window.addEventListener('resize', handleResize);
-    window.visualViewport?.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.visualViewport?.removeEventListener('resize', handleResize);
-    };
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    return () => window.removeEventListener('resize', updateHeight);
   }, []);
 
   // Filtrer les messages pour ce coach
@@ -77,38 +76,48 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (text: string) => {
-    if (!text.trim() && !selectedFile) return;
+  const handleSendMessage = async () => {
+    if ((!newMessage.trim() && !selectedFile) || shouldShowPremium) return;
 
-    let messageContent = text;
-    
-    // Si on a une image sélectionnée, on utilise directement l'URL base64
+    let messageContent = newMessage;
+    let imageData = null;
+
     if (selectedFile && previewUrl) {
-      messageContent = `<img src="${previewUrl}" alt="Image envoyée" class="max-w-xs rounded-lg" />`;
-      if (text.trim()) {
-        messageContent += `\n${text}`;
-      }
+      imageData = {
+        data: previewUrl,
+        type: selectedFile.type
+      };
     }
 
     const message = {
-      id: `${Date.now()}-user`,
+      id: Date.now().toString(),
       chatId: coach.id,
       content: messageContent,
       timestamp: new Date().toISOString(),
       senderId: 'user',
       receiverId: coach.id,
-      type: selectedFile ? 'image' : 'text'
+      ...(imageData && { image: imageData })
     };
 
     addMessage(message);
     setNewMessage('');
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    scrollToBottom();
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    clearFileSelection();
+    
+    // Simuler la réponse du coach
+    setIsCoachTyping(true);
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+    
+    const coachMessage = {
+      id: (Date.now() + 1).toString(),
+      chatId: coach.id,
+      content: getRandomResponse(),
+      timestamp: new Date().toISOString(),
+      senderId: coach.id,
+      receiverId: 'user'
+    };
+    
+    addMessage(coachMessage);
+    setIsCoachTyping(false);
   };
 
   const handleAttachmentClick = () => {
@@ -133,18 +142,25 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
       return;
     }
 
-    // Convertir l'image en base64
+    // Convertir en base64
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64 = e.target?.result as string;
-      setSelectedFile(file);
+    reader.onload = () => {
+      const base64 = reader.result as string;
       setPreviewUrl(base64);
+      setSelectedFile(file);
     };
-    reader.onerror = (error) => {
-      console.error('Error reading file:', error);
+    reader.onerror = () => {
       alert('Erreur lors de la lecture du fichier');
     };
     reader.readAsDataURL(file);
+  };
+
+  const clearFileSelection = () => {
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleGiftSelect = (gift: Gift) => {
@@ -154,10 +170,12 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
   };
 
   return (
-    <div className="flex flex-col h-full max-h-[100dvh] bg-gray-50 dark:bg-gray-900">
-      <ChatHeader coach={coach} onBack={onBack} />
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <div ref={headerRef}>
+        <ChatHeader coach={coach} onBack={onBack} />
+      </div>
       
-      <div className="flex-1 overflow-y-auto pb-[120px]">
+      <div className="overflow-y-auto" style={{ height: messageAreaHeight }}>
         <div className="p-4 space-y-4">
           {messages.map((message) => (
             <ChatMessage
@@ -198,7 +216,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
         onClick={e => e.stopPropagation()}
       />
 
-      <div className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      <div ref={inputRef} className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         {previewUrl && (
           <div className="bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
             <div className="p-2">
@@ -207,15 +225,13 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
                   src={previewUrl} 
                   alt="Aperçu" 
                   className="max-h-32 rounded-lg"
+                  onError={() => {
+                    // Si l'image ne peut pas être chargée, nettoyer la prévisualisation
+                    clearFileSelection();
+                  }}
                 />
                 <button
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setPreviewUrl(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = '';
-                    }
-                  }}
+                  onClick={clearFileSelection}
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
                 >
                   ×
