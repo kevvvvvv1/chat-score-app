@@ -1,14 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../components/Navbar';
 
 function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="fixed inset-0 flex flex-col">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <img
@@ -20,9 +18,7 @@ function Home() {
       </div>
 
       {/* Navbar */}
-      <div className="relative z-10">
-        <Navbar />
-      </div>
+      <Navbar />
 
       {/* Content */}
       <div className="relative z-10 flex-1 flex items-center justify-center">
@@ -31,34 +27,22 @@ function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="space-y-8"
+            className="space-y-6"
           >
             {/* Tagline */}
-            <p className="text-3xl font-bold text-white mb-8">
+            <p className="text-3xl font-bold text-white">
               Maintenant vous gérez.
             </p>
 
-            {/* Buttons */}
-            <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/chat')}
-                className="w-full p-4 bg-primary text-white rounded-xl text-lg font-bold uppercase hover:bg-opacity-90 transition-colors shadow-lg shadow-primary/20"
-              >
-                Start Chatting
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/score')}
-                className="flex items-center justify-center gap-2 mx-auto text-gray-300 hover:text-white transition-colors"
-              >
-                <FontAwesomeIcon icon={faChartLine} className="text-sm" />
-                <span className="text-sm">Tester mon score</span>
-              </motion.button>
-            </div>
+            {/* Main Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/chat')}
+              className="w-full p-4 bg-primary text-white rounded-xl text-lg font-bold uppercase hover:bg-opacity-90 transition-colors shadow-lg shadow-primary/20"
+            >
+              Start Chatting
+            </motion.button>
           </motion.div>
         </div>
       </div>

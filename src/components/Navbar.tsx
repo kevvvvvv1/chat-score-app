@@ -7,7 +7,7 @@ function Navbar() {
   const { isAuthenticated } = useAuthStore();
 
   return (
-    <div className="px-6 py-4">
+    <div className="absolute top-0 left-0 right-0 px-6 py-4">
       <div className="flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <FontAwesomeIcon 
