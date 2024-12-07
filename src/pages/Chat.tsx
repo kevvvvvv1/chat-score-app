@@ -6,12 +6,14 @@ import ChatList from '../components/chat/ChatList';
 import ChatConversation from '../components/chat/ChatConversation';
 import { Coach } from '../types/coach';
 import { useChatStore } from '../stores/chatStore';
+import { useNavigationStore } from '../stores/navigationStore';
 
 export default function Chat() {
   const [selectedCoach, setSelectedCoach] = useState<Coach | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { pinnedChats, messages, getLastMessage, clearMessages } = useChatStore();
+  const { setInChatConversation } = useNavigationStore();
 
   const filterCoaches = (coaches: Coach[]) => {
     if (!searchQuery) return coaches;
@@ -74,6 +76,16 @@ export default function Chat() {
       };
     });
 
+  const handleSelectCoach = (coach: Coach) => {
+    setSelectedCoach(coach);
+    setInChatConversation(true);
+  };
+
+  const handleBack = () => {
+    setSelectedCoach(null);
+    setInChatConversation(false);
+  };
+
   return (
     <div className="h-full flex">
       {!selectedCoach ? (
@@ -132,7 +144,7 @@ export default function Chat() {
             onChatSelect={(chatId) => {
               const coach = coaches.find(c => c.id === chatId);
               if (coach) {
-                setSelectedCoach(coach);
+                handleSelectCoach(coach);
               }
             }}
           />
@@ -146,7 +158,7 @@ export default function Chat() {
               onChatSelect={(chatId) => {
                 const coach = coaches.find(c => c.id === chatId);
                 if (coach) {
-                  setSelectedCoach(coach);
+                  handleSelectCoach(coach);
                 }
               }}
             />
@@ -154,7 +166,7 @@ export default function Chat() {
           <div className="flex-1 h-full flex flex-col">
             <ChatConversation 
               coach={selectedCoach} 
-              onBack={() => setSelectedCoach(null)} 
+              onBack={handleBack} 
             />
           </div>
         </>

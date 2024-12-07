@@ -179,7 +179,7 @@ function Profile() {
               className="text-xl text-gray-600 dark:text-gray-400" 
             />
             <span className="font-medium dark:text-white">
-              {isDarkMode ? 'Mode sombre' : 'Mode clair'}
+              Mode sombre
             </span>
           </div>
           <span className="text-sm text-gray-500 dark:text-gray-400">
