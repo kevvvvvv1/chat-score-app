@@ -6,8 +6,9 @@ import { useNavigationStore } from '../stores/navigationStore';
 function Layout() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const isPremiumPage = location.pathname === '/premium';
   const { isInChatConversation } = useNavigationStore();
-  const shouldShowNav = !isHomePage && !isInChatConversation;
+  const shouldShowNav = !isHomePage && !isInChatConversation && !isPremiumPage;
 
   return (
     <div className="fixed inset-0 flex flex-col bg-gray-100 dark:bg-gray-900 transition-colors">

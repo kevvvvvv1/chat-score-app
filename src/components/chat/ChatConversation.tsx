@@ -205,10 +205,10 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
       </div>
       
       <div 
-        className="flex-1 overflow-y-auto relative"
+        className="flex-1 overflow-y-auto relative scroll-smooth"
         style={{ height: messageAreaHeight }}
       >
-        <div className="py-4 h-full">
+        <div className="py-4 h-full flex flex-col justify-end">
           {messages.length === 0 ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <span className="text-4xl mb-2">👋</span>

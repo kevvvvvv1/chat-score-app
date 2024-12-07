@@ -29,8 +29,11 @@ export function ChatMessage({ message, isUser, avatar, isPremium }: ChatMessageP
     <div
       className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-start gap-2 px-4`}
     >
-      {!isUser && (
-        <img src={avatar || '/default-avatar.png'} alt="Avatar" className="w-8 h-8 rounded-full flex-shrink-0" />
+      {!isUser && avatar && (
+        <img src={avatar} alt="Avatar" className="w-8 h-8 rounded-full flex-shrink-0" />
+      )}
+      {!isUser && !avatar && (
+        <div className="w-8 flex-shrink-0" />
       )}
       
       <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[75%] min-w-0`}>
