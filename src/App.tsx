@@ -7,10 +7,15 @@ import Profile from './pages/Profile';
 import Premium from './pages/Premium';
 import PhotoTest from './pages/PhotoTest';
 import PersonalityTest from './pages/PersonalityTest';
+import PersonalityIntro from './pages/PersonalityIntro';
+import PersonalityResults from './pages/PersonalityResults';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import BottomNav from './components/navigation/BottomNav';
+import ScoreRedirect from './components/routing/ScoreRedirect';
+import ScoreResults from './pages/ScoreResults';
 import { useThemeStore } from './stores/themeStore';
 
 function App() {
@@ -26,40 +31,41 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/premium" element={<Premium />} />
-          <Route path="/photo-test" element={<PhotoTest />} />
-          <Route path="/personality-test" element={<PersonalityTest />} />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/score"
-            element={
-              <ProtectedRoute>
-                <Score />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-      </Routes>
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/premium" element={<Premium />} />
+              <Route path="/photo-test" element={<PhotoTest />} />
+              <Route path="/personality" element={<PersonalityIntro />} />
+              <Route path="/personality-test" element={<PersonalityTest />} />
+              <Route path="/personality-results" element={<PersonalityResults />} />
+              <Route path="/score" element={<ScoreRedirect />} />
+              <Route path="/score-results" element={<ScoreResults />} />
+              <Route
+                path="/chat"
+                element={
+                  <ProtectedRoute>
+                    <Chat />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+            </Route>
+          </Routes>
+        </main>
+        <BottomNav />
+      </div>
     </Router>
   );
 }

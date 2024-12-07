@@ -8,13 +8,25 @@ const EMOJI_CATEGORIES = {
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void;
+  onClose: () => void;
 }
 
-export default function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
+export default function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
   const [activeCategory, setActiveCategory] = useState('Smileys');
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-72">
+    <div className="absolute bottom-full mb-2 left-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 w-72 z-50">
+      {/* Header with close button */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-medium">Emojis</h3>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          ✕
+        </button>
+      </div>
+
       {/* Categories */}
       <div className="flex gap-2 mb-4 overflow-x-auto">
         {Object.keys(EMOJI_CATEGORIES).map(category => (
