@@ -42,9 +42,9 @@ export default function BottomNav() {
       </Link>
 
       <Link
-        to="/personality"
+        to="/profile"
         className={`flex flex-col items-center space-y-1 ${
-          isActive('/personality')
+          isActive('/profile')
             ? 'text-primary'
             : 'text-gray-600 dark:text-gray-400'
         }`}
@@ -52,9 +52,8 @@ export default function BottomNav() {
         {isAuthenticated && user ? (
           <AvatarWithBadge
             src={user.avatar || '/default-avatar.png'}
-            alt={user.name || 'User'}
+            isPremium={user.isPremium}
             size="small"
-            showOnlineBadge={false}
           />
         ) : (
           <FontAwesomeIcon icon={faUser} className="text-xl" />
