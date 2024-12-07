@@ -14,12 +14,14 @@ interface ChatState {
   pinnedChats: string[];
   messages: Message[];
   limitedChats: string[];
+  unreadChats: string[];
   togglePin: (chatId: string) => void;
   isPinned: (chatId: string) => boolean;
   addMessage: (message: Message) => void;
   getLastMessage: (chatId: string) => Message | undefined;
   isLimited: (chatId: string) => boolean;
   setLimited: (chatId: string) => void;
+  toggleUnread: (chatId: string) => void;
   clearMessages: () => void;
 }
 
@@ -29,6 +31,7 @@ export const useChatStore = create<ChatState>()(
       pinnedChats: [],
       messages: [],
       limitedChats: [],
+      unreadChats: [],
       togglePin: (chatId: string) => {
         set((state) => {
           const isPinned = state.pinnedChats.includes(chatId);
@@ -72,8 +75,19 @@ export const useChatStore = create<ChatState>()(
           limitedChats: [...state.limitedChats, chatId]
         }));
       },
+      toggleUnread: (chatId: string) => {
+        set((state) => {
+          const isUnread = state.unreadChats.includes(chatId);
+          return {
+            ...state,
+            unreadChats: isUnread
+              ? state.unreadChats.filter(id => id !== chatId)
+              : [...state.unreadChats, chatId]
+          };
+        });
+      },
       clearMessages: () => {
-        set({ messages: [], limitedChats: [] });
+        set({ messages: [], limitedChats: [], unreadChats: [] });
       }
     }),
     {
@@ -82,7 +96,8 @@ export const useChatStore = create<ChatState>()(
       partialize: (state) => ({ 
         messages: state.messages,
         pinnedChats: state.pinnedChats,
-        limitedChats: state.limitedChats
+        limitedChats: state.limitedChats,
+        unreadChats: state.unreadChats
       }),
       version: 1,
     }

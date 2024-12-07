@@ -34,18 +34,22 @@ interface ChatListProps {
 
 export default function ChatList({ pinnedChats, allChats, onChatSelect }: ChatListProps) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const { togglePin, isPinned } = useChatStore();
+  const { togglePin, isPinned, toggleUnread, unreadChats } = useChatStore();
 
   // Séparer les chats non épinglés en ligne et hors ligne
   const onlineChats = allChats.filter(chat => chat.user.isOnline);
   const offlineChats = allChats.filter(chat => !chat.user.isOnline);
 
   const ChatItem = ({ chat }: { chat: ChatMessage }) => {
+    const isUnread = unreadChats.includes(chat.id);
+
     const handleOptionClick = (e: React.MouseEvent, action: string) => {
       e.stopPropagation();
       
       if (action === 'pin') {
         togglePin(chat.id);
+      } else if (action === 'unread') {
+        toggleUnread(chat.id);
       }
       
       setActiveMenu(null);
@@ -75,7 +79,7 @@ export default function ChatList({ pinnedChats, allChats, onChatSelect }: ChatLi
 
         <div className="ml-4 flex-1">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className={`font-semibold text-gray-900 dark:text-gray-100 ${isUnread ? 'font-bold' : ''}`}>
               {chat.user.name}
             </h3>
             <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -84,7 +88,7 @@ export default function ChatList({ pinnedChats, allChats, onChatSelect }: ChatLi
           </div>
 
           <div className="flex justify-between items-center mt-1">
-            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1">
+            <p className={`text-sm text-gray-600 dark:text-gray-300 line-clamp-1 ${isUnread ? 'font-bold' : ''}`}>
               {chat.isTyping ? (
                 <span className="text-blue-500">typing...</span>
               ) : chat.lastMessage ? (
@@ -95,9 +99,9 @@ export default function ChatList({ pinnedChats, allChats, onChatSelect }: ChatLi
                 </span>
               )}
             </p>
-            {typeof chat.unreadCount === 'number' && chat.unreadCount > 0 && (
+            {isUnread && (
               <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 ml-2">
-                {chat.unreadCount}
+                •
               </span>
             )}
           </div>
@@ -137,7 +141,14 @@ export default function ChatList({ pinnedChats, allChats, onChatSelect }: ChatLi
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                   >
                     <FontAwesomeIcon icon={faThumbtack} className="mr-2" />
-                    {isPinned(chat.id) ? 'Unpin' : 'Pin'}
+                    {isPinned(chat.id) ? 'Désépingler' : 'Épingler'}
+                  </button>
+                  <button
+                    onClick={(e) => handleOptionClick(e, 'unread')}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                  >
+                    <FontAwesomeIcon icon={faCircle} className="mr-2" />
+                    Marquer comme non lu
                   </button>
                   <button
                     onClick={(e) => handleOptionClick(e, 'delete')}
