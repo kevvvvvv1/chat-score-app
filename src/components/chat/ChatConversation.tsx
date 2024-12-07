@@ -24,6 +24,9 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
   const [showGiftMenu, setShowGiftMenu] = useState(false);
   const [showPremiumBanner, setShowPremiumBanner] = useState(false);
   const [isCoachTyping, setIsCoachTyping] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuthStore();
   const { messages: allMessages, addMessage, isLimited, setLimited } = useChatStore();
@@ -53,44 +56,64 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (content: string) => {
-    if (!content.trim() || shouldShowPremium) return;
+  const handleSendMessage = (text: string) => {
+    if (!text.trim() && !selectedFile) return;
 
-    // Ajouter le message de l'utilisateur
-    const userMessage = {
+    let messageContent = text;
+    
+    // Si on a une image sélectionnée, on ajoute le tag img
+    if (selectedFile && previewUrl) {
+      messageContent = `<img src="${previewUrl}" alt="Image envoyée" class="max-w-xs rounded-lg" />`;
+      if (text.trim()) {
+        messageContent += `\n${text}`;
+      }
+    }
+
+    const message = {
       id: `${Date.now()}-user`,
       chatId: coach.id,
-      content: content.trim(),
+      content: messageContent,
       timestamp: new Date().toISOString(),
       senderId: 'user',
-      receiverId: coach.id
+      receiverId: coach.id,
+      type: selectedFile ? 'image' : 'text'
     };
-    
-    addMessage(userMessage);
+
+    addMessage(message);
     setNewMessage('');
-    setShowEmojiPicker(false);
+    setSelectedFile(null);
+    setPreviewUrl(null);
     scrollToBottom();
 
-    // Simuler la réponse du coach
-    setIsCoachTyping(true);
-    
-    // Délai aléatoire entre 1 et 3 secondes
-    const delay = 1000 + Math.random() * 2000;
-    
-    setTimeout(() => {
-      const randomResponse = randomResponses[Math.floor(Math.random() * randomResponses.length)];
-      const coachMessage = {
-        id: `${Date.now()}-coach`,
-        chatId: coach.id,
-        content: randomResponse,
-        timestamp: new Date().toISOString(),
-        senderId: coach.id,
-        receiverId: 'user'
-      };
-      addMessage(coachMessage);
-      setIsCoachTyping(false);
-      scrollToBottom();
-    }, delay);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Vérifier le type de fichier
+    if (!file.type.startsWith('image/')) {
+      alert('Seules les images sont acceptées');
+      return;
+    }
+
+    // Vérifier la taille du fichier (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Le fichier est trop volumineux (max 5MB)');
+      return;
+    }
+
+    // Créer une URL pour l'aperçu de l'image
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedFile(file);
+    setPreviewUrl(imageUrl);
   };
 
   const handleEmojiSelect = (emoji: string) => {
@@ -114,31 +137,18 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
     // TODO: Déduire les crédits du compte de l'utilisateur
   };
 
-  const handleAttachmentClick = () => {
-    if (!user?.isPremium) {
-      setShowPremiumBanner(true);
-      return;
-    }
-    // TODO: Implémenter la logique de pièce jointe
-    alert("La fonctionnalité de pièce jointe sera bientôt disponible !");
-  };
-
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       <ChatHeader coach={coach} onBack={onBack} />
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-100 dark:bg-gray-800">
         {messages.map((message) => {
           if (!message || !message.content || !message.timestamp || !message.senderId) return null;
-          
-          const timestamp = message.timestamp ? new Date(message.timestamp) : new Date();
-          if (!(timestamp instanceof Date) || isNaN(timestamp.getTime())) return null;
           
           return (
             <ChatMessage
               key={message.id}
-              content={typeof message.content === 'string' ? message.content : ''}
-              timestamp={timestamp}
+              message={message}
               isUser={message.senderId === 'user'}
               avatar={message.senderId === 'user' ? (user?.avatar || '/default-avatar.png') : (coach.avatar || '/default-avatar.png')}
               isPremium={message.senderId === 'user' ? user?.isPremium : true}
@@ -163,6 +173,39 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Input caché pour la sélection de fichier */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+
+      {previewUrl && (
+        <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800">
+          <div className="relative inline-block">
+            <img 
+              src={previewUrl} 
+              alt="Aperçu" 
+              className="max-h-32 rounded-lg"
+            />
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setPreviewUrl(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              }}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence>
         {shouldShowPremium && (
@@ -189,6 +232,7 @@ export default function ChatConversation({ coach, onBack, onSendMessage }: ChatC
           showEmojiPicker={showEmojiPicker}
           showGiftMenu={showGiftMenu}
           disabled={shouldShowPremium}
+          hasAttachment={!!selectedFile}
         />
         
         <AnimatePresence>

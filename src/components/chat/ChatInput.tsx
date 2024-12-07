@@ -16,6 +16,7 @@ interface ChatInputProps {
   showEmojiPicker: boolean;
   showGiftMenu: boolean;
   disabled?: boolean;
+  hasAttachment?: boolean;
 }
 
 const ChatInput = ({
@@ -27,7 +28,8 @@ const ChatInput = ({
   onAttachmentClick,
   showEmojiPicker,
   showGiftMenu,
-  disabled
+  disabled,
+  hasAttachment
 }: ChatInputProps) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -52,7 +54,11 @@ const ChatInput = ({
 
         <button 
           onClick={onAttachmentClick}
-          className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+          className={`p-2 rounded-full transition-colors ${
+            hasAttachment
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-500'
+              : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
+          }`}
           disabled={disabled}
         >
           <FontAwesomeIcon icon={faPaperclip} />
@@ -82,9 +88,9 @@ const ChatInput = ({
 
         <button
           onClick={() => onSend(value)}
-          disabled={!value.trim() || disabled}
+          disabled={(!value.trim() && !hasAttachment) || disabled}
           className={`p-2 rounded-full transition-colors ${
-            value.trim()
+            value.trim() || hasAttachment
               ? 'bg-blue-500 text-white hover:bg-blue-600'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
