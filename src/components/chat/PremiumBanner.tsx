@@ -1,20 +1,19 @@
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCrown, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCrown } from '@fortawesome/free-solid-svg-icons';
 
 interface PremiumBannerProps {
-  onClose: () => void;
-  onUpgrade: () => void;
+  onUpgrade?: () => void;
+  onBack: () => void;
 }
 
-const PremiumBanner = ({ onClose, onUpgrade }: PremiumBannerProps) => {
+const PremiumBanner = ({ onUpgrade, onBack }: PremiumBannerProps) => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-      onClick={onClose}
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -23,13 +22,6 @@ const PremiumBanner = ({ onClose, onUpgrade }: PremiumBannerProps) => {
         className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-md w-full mx-4 relative"
         onClick={e => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <FontAwesomeIcon icon={faTimes} />
-        </button>
-
         <div className="text-center">
           <div className="w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <FontAwesomeIcon icon={faCrown} className="text-3xl text-yellow-500" />
@@ -52,10 +44,10 @@ const PremiumBanner = ({ onClose, onUpgrade }: PremiumBannerProps) => {
             </button>
             
             <button
-              onClick={onClose}
+              onClick={onBack}
               className="w-full px-6 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
             >
-              Retour
+              Retour aux chats
             </button>
           </div>
         </div>
